@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.eclipse.scout.contacts.client.person;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -304,6 +305,18 @@ public class PersonForm extends AbstractForm {
 
           if (url == null) {
             setImage(null);
+          }
+          else if (url.contains("local")) {
+            try {
+              URL url1 = this.getClass().getResource(url);
+
+              setImage(IOUtility.readFromUrl(url1));
+
+              setAutoFit(true);
+            }
+            catch (IOException e) {
+              e.printStackTrace();
+            }
           }
           else {
             try {

@@ -3,6 +3,7 @@ package org.eclipse.scout.contacts.events.client.event;
 import java.util.List;
 
 import org.eclipse.scout.contacts.client.contact.ContactOutline;
+import org.eclipse.scout.contacts.events.account.AccountTablePage;
 import org.eclipse.scout.rt.client.extension.ui.basic.tree.TreeChains.TreeAutoCheckChildNodesChain;
 import org.eclipse.scout.rt.client.extension.ui.basic.tree.TreeChains.TreeNodesCheckedChain;
 import org.eclipse.scout.rt.client.extension.ui.desktop.outline.AbstractOutlineExtension;
@@ -38,6 +39,7 @@ public class EventOutlineExtension extends AbstractOutlineExtension<ContactOutli
   @Override
   public void execCreateChildPages(OutlineCreateChildPagesChain chain, List<IPage<?>> pageList) {
     super.execCreateChildPages(chain, pageList);
+    pageList.add(new AccountTablePage());
     pageList.add(new EventTablePage());
   }
 

@@ -13,14 +13,18 @@ package org.eclipse.scout.contacts.events.server.person;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.scout.contacts.events.account.EthereumService;
+import org.eclipse.scout.contacts.events.account.model.Wallet;
 import org.eclipse.scout.contacts.events.server.EventCountBean;
 import org.eclipse.scout.contacts.events.server.sql.SQLs;
 import org.eclipse.scout.contacts.events.shared.person.PersonFormTabExtensionData;
+import org.eclipse.scout.contacts.events.shared.person.PersonFormWalletTabExtensionData;
 import org.eclipse.scout.contacts.events.shared.person.PersonTablePageDataExtension;
 import org.eclipse.scout.contacts.server.person.PersonService;
 import org.eclipse.scout.contacts.shared.person.PersonFormData;
 import org.eclipse.scout.contacts.shared.person.PersonTablePageData;
 import org.eclipse.scout.contacts.shared.person.PersonTablePageData.PersonTableRowData;
+import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.Replace;
 import org.eclipse.scout.rt.platform.holders.BeanArrayHolder;
 import org.eclipse.scout.rt.platform.holders.NVPair;
@@ -60,6 +64,24 @@ public class PersonServiceExtension extends PersonService {
 
     PersonFormTabExtensionData extensionData = formData.getContribution(PersonFormTabExtensionData.class);
     SQL.selectInto(SQLs.PERSON_EVENT_SELECT, extensionData, formData);
+
+    PersonFormWalletTabExtensionData walletExtensionData = formData.getContribution(PersonFormWalletTabExtensionData.class);
+
+    // handle alice (prs01) and lena (prs01a)
+    String personId = formData.getPersonId();
+    Wallet wallet = null;
+
+    if (personId.equals("prs01")) {
+      wallet = BEANS.get(EthereumService.class).getWallet("0x8d2ec831056c620fea2fabad8bf6548fc5810cc3");
+    }
+    else if (personId.equals("prs01a")) {
+      wallet = BEANS.get(EthereumService.class).getWallet("0xcbc12f306da804bb681aceeb34f0bc58ba2f7ad7");
+    }
+
+    if (wallet != null) {
+      walletExtensionData.getWalletAddress().setValue(wallet.getAddress());
+      walletExtensionData.getWalletPath().setValue(wallet.getFile().getAbsolutePath());
+    }
 
     return formData;
   }

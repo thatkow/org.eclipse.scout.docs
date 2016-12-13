@@ -32,5 +32,12 @@
       <groupId>org.eclipse.scout.contacts</groupId>
       <artifactId>org.eclipse.scout.contacts.events.shared</artifactId>
     </dependency>
+    
+    <dependency>
+	  <groupId>org.web3j</groupId>
+	  <artifactId>core</artifactId>
+	  <version>1.0.9</version>
+	</dependency>
+    
   </dependencies>
 </project>

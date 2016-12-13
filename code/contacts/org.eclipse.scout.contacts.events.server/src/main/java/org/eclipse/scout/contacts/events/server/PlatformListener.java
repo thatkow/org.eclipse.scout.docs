@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.eclipse.scout.contacts.events.server.sql.SQLs;
 import org.eclipse.scout.contacts.events.shared.person.PersonFormTabExtensionData;
+import org.eclipse.scout.contacts.events.shared.person.PersonFormWalletTabExtensionData;
 import org.eclipse.scout.contacts.events.shared.person.PersonTablePageDataExtension;
 import org.eclipse.scout.contacts.server.sql.DatabaseProperties;
 import org.eclipse.scout.contacts.server.sql.IDataStoreService;
@@ -74,6 +75,7 @@ public class PlatformListener implements IPlatformListener, IDataStoreService {
     // Register DTO core extensions
     extensionRegistry.register(PersonTablePageDataExtension.class);
     extensionRegistry.register(PersonFormTabExtensionData.class);
+    extensionRegistry.register(PersonFormWalletTabExtensionData.class);
   }
 
   public void createEventTable() {

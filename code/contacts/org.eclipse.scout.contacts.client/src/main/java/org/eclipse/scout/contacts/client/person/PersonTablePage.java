@@ -23,9 +23,11 @@ import org.eclipse.scout.rt.client.ui.action.menu.IMenu;
 import org.eclipse.scout.rt.client.ui.action.menu.IMenuType;
 import org.eclipse.scout.rt.client.ui.action.menu.TableMenuType;
 import org.eclipse.scout.rt.client.ui.basic.table.AbstractTable;
+import org.eclipse.scout.rt.client.ui.basic.table.ITableRow;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractSmartColumn;
 import org.eclipse.scout.rt.client.ui.basic.table.columns.AbstractStringColumn;
 import org.eclipse.scout.rt.client.ui.desktop.outline.pages.AbstractPageWithTable;
+import org.eclipse.scout.rt.client.ui.desktop.outline.pages.IPage;
 import org.eclipse.scout.rt.client.ui.desktop.outline.pages.ISearchForm;
 import org.eclipse.scout.rt.client.ui.form.FormEvent;
 import org.eclipse.scout.rt.client.ui.form.FormListener;
@@ -64,6 +66,13 @@ public class PersonTablePage extends AbstractPageWithTable<PersonTablePage.Table
   // tag::linkToOrganization[]
 
   @Override
+  protected IPage<?> execCreateChildPage(ITableRow row) {
+    PersonNodePage childPage = new PersonNodePage();
+    childPage.setPersonId(getTable().getPersonIdColumn().getValue(row));
+    return childPage;
+  }
+
+  @Override
   protected void execLoadData(SearchFilter filter) {
     importPageData(BEANS.get(IPersonService.class)
         .getPersonTableData(filter, getOrganizationId())); // <2>
@@ -72,7 +81,7 @@ public class PersonTablePage extends AbstractPageWithTable<PersonTablePage.Table
 
   @Override // <3>
   protected boolean getConfiguredLeaf() {
-    return true;
+    return false;
   }
   // tag::structure[]
   // tag::linkToOrganization[]

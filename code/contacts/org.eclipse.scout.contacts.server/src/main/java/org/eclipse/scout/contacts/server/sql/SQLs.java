@@ -281,6 +281,19 @@ public interface SQLs {
       + "          'The curious girl', "
       + "          'org01')";
 
+  String PERSON_VALUES_01A = ""
+      + "VALUES   ('prs01a', "
+      + "          'Lena', "
+      + "          'Meier', "
+      + "          '/images/local_lena.png', "
+      + "          '26.11.1865', "
+      + "          'F', "
+      + "          null, "
+      + "          'Baden', "
+      + "          'CH', "
+      + "          null, "
+      + "          'org02')";
+
   String PERSON_VALUES_02 = ""
       + "VALUES   ('prs02', "
       + "          'Rabbit', "
