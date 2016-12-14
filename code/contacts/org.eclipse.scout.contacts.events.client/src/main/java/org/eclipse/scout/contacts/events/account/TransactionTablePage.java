@@ -78,10 +78,43 @@ public class TransactionTablePage extends AbstractPageWithTable<Table> {
     }
 
     @Order(1000)
-    public class SendTransactionMenu extends AbstractMenu {
+    public class ViewMenu extends AbstractMenu {
       @Override
       protected String getConfiguredText() {
-        return TEXTS.get("SendTransaction");
+        return TEXTS.get("View");
+      }
+
+      @Override
+      protected String getConfiguredIconId() {
+        // get unicode from http://fontawesome.io/icon/binoculars/
+        return "font:awesomeIcons \uf1e5";
+      }
+
+      @Override
+      protected Set<? extends IMenuType> getConfiguredMenuTypes() {
+        return CollectionUtility.hashSet(TableMenuType.SingleSelection);
+      }
+
+      @Override
+      protected void execAction() {
+        TransactionForm form = new TransactionForm();
+        String txId = getTable().getIdColumn().getSelectedValue();
+        form.setId(txId);
+        form.startView();
+      }
+    }
+
+    @Order(2000)
+    public class ReplaceMenu extends AbstractMenu {
+      @Override
+      protected String getConfiguredText() {
+        return TEXTS.get("Replace");
+      }
+
+      @Override
+      protected String getConfiguredIconId() {
+        // get unicode from http://fontawesome.io/icon/files-o/
+        return "font:awesomeIcons \uf0c5";
       }
 
       @Override
@@ -92,22 +125,66 @@ public class TransactionTablePage extends AbstractPageWithTable<Table> {
       @Override
       protected void execOwnerValueChanged(Object newOwnerValue) {
         int status = getTable().getStatusColumn().getSelectedValue();
-        setEnabled(status == 1);
+        setEnabled(status == TransactionStatusLookupCall.OFFLINE);
+      }
+
+      @Override
+      protected void execAction() {
+        TransactionForm form = new TransactionForm();
+        String txId = getTable().getIdColumn().getSelectedValue();
+        form.setId(txId);
+        form.startModify();
+
+        form.waitFor();
+        if (form.isFormStored()) {
+          reloadPage();
+        }
+      }
+    }
+
+    @Order(3000)
+    public class SendMenu extends AbstractMenu {
+      @Override
+      protected String getConfiguredText() {
+        return TEXTS.get("Send");
+      }
+
+      @Override
+      protected String getConfiguredIconId() {
+        // get unicode from http://fontawesome.io/icon/paper-plane/
+        return "font:awesomeIcons \uf1d8";
+      }
+
+      @Override
+      protected Set<? extends IMenuType> getConfiguredMenuTypes() {
+        return CollectionUtility.hashSet(TableMenuType.SingleSelection);
+      }
+
+      @Override
+      protected void execOwnerValueChanged(Object newOwnerValue) {
+        int status = getTable().getStatusColumn().getSelectedValue();
+        setEnabled(status == TransactionStatusLookupCall.OFFLINE);
       }
 
       @Override
       protected void execAction() {
         String txId = getTable().getIdColumn().getSelectedValue();
-        BEANS.get(IWalletService.class).sendTransaction(txId);
+        BEANS.get(ITransactionService.class).send(txId);
         reloadPage();
       }
     }
 
-    @Order(2000)
+    @Order(4000)
     public class RefreshMenu extends AbstractMenu {
       @Override
       protected String getConfiguredText() {
         return TEXTS.get("Refresh");
+      }
+
+      @Override
+      protected String getConfiguredIconId() {
+        // get unicode from http://fontawesome.io/icon/refresh/
+        return "font:awesomeIcons \uf021";
       }
 
       @Override

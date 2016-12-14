@@ -17,6 +17,7 @@ import org.eclipse.scout.rt.client.ui.form.fields.stringfield.AbstractStringFiel
 import org.eclipse.scout.rt.platform.Order;
 import org.eclipse.scout.rt.shared.TEXTS;
 
+// TODO check if type can be removed
 @Data(PersonFormWalletTabExtensionData.class)
 public class PersonFormWalletTabExtension extends AbstractTabBoxExtension<PersonForm.MainBox.DetailsBox> {
 
@@ -47,11 +48,6 @@ public class PersonFormWalletTabExtension extends AbstractTabBoxExtension<Person
   @Order(25)
   public class WalletBox extends AbstractGroupBox {
 
-    // TODO add qr code
-    // https://github.com/zxing/zxing
-    // https://zxing.github.io/zxing/
-    // online qr code generator
-    // https://zxing.appspot.com/generator
     @Override
     protected String getConfiguredLabel() {
       return TEXTS.get("Wallet");
@@ -138,8 +134,8 @@ public class PersonFormWalletTabExtension extends AbstractTabBoxExtension<Person
 
       @Override
       protected void execClickAction() {
-        String walletPath = getWalletPathField().getValue();
-        String password = getWalletPasswordField().getValue();
+//        String walletPath = getWalletPathField().getValue();
+//        String password = getWalletPasswordField().getValue();
 //        String address = BEANS.get(IWalletService.class).create(walletPath, password);
       }
     }

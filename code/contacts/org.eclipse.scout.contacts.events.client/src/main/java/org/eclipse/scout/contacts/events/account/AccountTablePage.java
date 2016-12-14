@@ -2,6 +2,8 @@ package org.eclipse.scout.contacts.events.account;
 
 import java.util.Set;
 
+import org.eclipse.scout.contacts.client.Icons;
+import org.eclipse.scout.contacts.client.person.PersonNodePage;
 import org.eclipse.scout.contacts.events.account.AccountTablePage.Table;
 import org.eclipse.scout.contacts.shared.person.PersonLookupCall;
 import org.eclipse.scout.rt.client.dto.Data;
@@ -42,8 +44,10 @@ public class AccountTablePage extends AbstractPageWithTable<Table> {
 
   @Override
   protected void execInitPage() {
-    if (getPersonId() == null) {
-      getTable().getPersonColumn().setVisible(false);
+    if (getParentPage() instanceof PersonNodePage) {
+      String person = ((PersonNodePage) getParentPage()).getPersonId();
+      setPersonId(person);
+      getTable().getPersonColumn().setVisible(person != null);
     }
   }
 
@@ -79,10 +83,63 @@ public class AccountTablePage extends AbstractPageWithTable<Table> {
     }
 
     @Order(1000)
-    public class CreateAliceLenaTransactionMenu extends AbstractMenu {
+    public class NewMenu extends AbstractMenu {
       @Override
       protected String getConfiguredText() {
-        return TEXTS.get("CreateTransaction");
+        return TEXTS.get("New");
+      }
+
+      @Override
+      protected String getConfiguredKeyStroke() {
+        return "alt-n";
+      }
+
+      @Override
+      protected String getConfiguredIconId() {
+        // get unicode from http://fontawesome.io/icon/magic/
+        return "font:awesomeIcons \uf0d0";
+      }
+
+      @Override
+      protected Set<? extends IMenuType> getConfiguredMenuTypes() {
+        return CollectionUtility.hashSet(TableMenuType.SingleSelection, TableMenuType.MultiSelection, TableMenuType.EmptySpace);
+      }
+
+      @Override
+      protected void execInitAction() {
+        setVisible(getPersonId() == null);
+        super.execInitAction();
+      }
+
+      @Override
+      protected void execAction() {
+        AccountForm form = new AccountForm();
+        form.setTitle(TEXTS.get("CreateAccount"));
+        form.getPersonField().setValue(getPersonId());
+        form.startNew();
+
+        form.waitFor();
+        if (form.isFormStored()) {
+          reloadPage();
+        }
+      }
+    }
+
+    @Order(2000)
+    public class EditMenu extends AbstractMenu {
+      @Override
+      protected String getConfiguredText() {
+        return TEXTS.get("Edit");
+      }
+
+      @Override
+      protected String getConfiguredIconId() {
+        return Icons.Pencil;
+      }
+
+      @Override
+      protected String getConfiguredKeyStroke() {
+        return "alt-e";
       }
 
       @Override
@@ -92,7 +149,52 @@ public class AccountTablePage extends AbstractPageWithTable<Table> {
 
       @Override
       protected void execAction() {
-        BEANS.get(IWalletService.class).createAliceLenaTransaction(getTable().getPersonColumn().getSelectedValue());
+        String address = getAddressColumn().getSelectedValue();
+        AccountForm form = new AccountForm();
+        form.setQrCode(address);
+        form.getAddressField().setValue(address);
+        form.startModify();
+
+        form.waitFor();
+        if (form.isFormStored()) {
+          reloadPage();
+        }
+      }
+    }
+
+    @Order(3000)
+    public class CreateAliceLenaTransactionMenu extends AbstractMenu {
+      @Override
+      protected String getConfiguredText() {
+        return TEXTS.get("AddTransaction");
+      }
+
+      @Override
+      protected String getConfiguredIconId() {
+        // get unicode from http://fontawesome.io/icon/plus/
+        return "font:awesomeIcons \uf067";
+      }
+
+      @Override
+      protected Set<? extends IMenuType> getConfiguredMenuTypes() {
+        return CollectionUtility.hashSet(TableMenuType.SingleSelection);
+      }
+
+      @Override
+      protected void execAction() {
+        TransactionForm form = new TransactionForm();
+
+        if (getTable().getSelectedRowCount() == 1) {
+          String person = getTable().getPersonColumn().getSelectedValue();
+          String address = getTable().getAddressColumn().getSelectedValue();
+
+          form.getFromField().setValue(address);
+          form.getFromBox().getPersonField().setValue(person);
+          form.getFromBox().getAccountField().setValue(address);
+          form.getToBox().getPersonField().requestFocus();
+        }
+
+        form.startNew();
       }
     }
 

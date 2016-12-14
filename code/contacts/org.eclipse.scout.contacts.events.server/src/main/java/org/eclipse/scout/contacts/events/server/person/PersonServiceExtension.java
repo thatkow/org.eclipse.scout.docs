@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.scout.contacts.events.account.EthereumService;
-import org.eclipse.scout.contacts.events.account.model.Wallet;
+import org.eclipse.scout.contacts.events.account.model.Account;
 import org.eclipse.scout.contacts.events.server.EventCountBean;
 import org.eclipse.scout.contacts.events.server.sql.SQLs;
 import org.eclipse.scout.contacts.events.shared.person.PersonFormTabExtensionData;
@@ -69,7 +69,7 @@ public class PersonServiceExtension extends PersonService {
 
     // handle alice (prs01) and lena (prs01a)
     String personId = formData.getPersonId();
-    Wallet wallet = null;
+    Account wallet = null;
 
     if (personId.equals("prs01")) {
       wallet = BEANS.get(EthereumService.class).getWallet("0x8d2ec831056c620fea2fabad8bf6548fc5810cc3");

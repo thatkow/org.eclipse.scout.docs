@@ -2,7 +2,9 @@ package org.eclipse.scout.contacts.events.account;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -10,8 +12,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.eclipse.scout.contacts.events.account.model.Account;
 import org.eclipse.scout.contacts.events.account.model.Transaction;
-import org.eclipse.scout.contacts.events.account.model.Wallet;
 import org.eclipse.scout.rt.platform.ApplicationScoped;
 import org.eclipse.scout.rt.platform.exception.ProcessingException;
 import org.slf4j.Logger;
@@ -34,47 +36,58 @@ public class EthereumService {
 
   private static final String TOKEN = "3UMFlH4jlpWx6IqttMeG";
   private static final String ETHEREUM_MAIN = "https://mainnet.infura.io/" + TOKEN;
-  private static final String ETHEREUM_TEST = "https://ropsten.infura.io/" + TOKEN;
+  // private static final String ETHEREUM_TEST = "https://ropsten.infura.io/" + TOKEN;
 
   // the connection to the ethereum net
   private Web3j web3j = null;
 
   // TODO replace these with some real persistence
-  private static Map<String, Wallet> wallets = new HashMap<>();
+  private static Map<String, Account> wallets = new HashMap<>();
   // transactions need to be persisted as well as ethereum currently does not offer an api to list all tx for an account
   // also see https://github.com/ethereum/go-ethereum/issues/1897
   private static Map<UUID, Transaction> transactions = new HashMap<>();
 
   @PostConstruct
   private void init() {
-    LOG.info("Poulating dummy/temp wallets ...");
-    populateWallet("prs01", "UTC--2016-12-12T08-09-51.487000000Z--8d2ec831056c620fea2fabad8bf6548fc5810cc3.json", "123");
-    populateWallet("prs01a", "UTC--2016-12-12T09-07-24.203000000Z--cbc12f306da804bb681aceeb34f0bc58ba2f7ad7.json", "456");
+    LOG.info("Poulating dummy/temp accounts ...");
+    populateAccount("prs01", "UTC--2016-12-12T08-09-51.487000000Z--8d2ec831056c620fea2fabad8bf6548fc5810cc3.json", "123");
+    populateAccount("prs01a", "UTC--2016-12-12T09-07-24.203000000Z--cbc12f306da804bb681aceeb34f0bc58ba2f7ad7.json", "456");
     LOG.info("local wallets successfully loaded ...");
   }
 
-  private void populateWallet(String personId, String fileName, String password) {
-    String walletName = "WALLET";
+  private void populateAccount(String personId, String fileName, String password) {
+    String walletName = "Primary Account";
     String walletPath = "C:\\Users\\mzi\\AppData\\Local\\Temp";
-    Wallet wallet = Wallet.load(walletName, password, walletPath, fileName);
+    Account wallet = Account.load(walletName, password, walletPath, fileName);
     wallet.setPersonId(personId);
 
     save(wallet);
   }
 
-  public String createTransaction(String from, String to, BigInteger amountWei) {
+  public String createTransaction(String from, String to, BigInteger amountWei, String data, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit) {
 
     if (from == null || to == null || amountWei == null) {
       return null;
     }
 
-    Wallet wallet = getWallet(from);
+    Account wallet = getWallet(from);
     if (wallet == null) {
       return null;
     }
 
-    BigInteger nonce = getNonce(from);
-    Transaction tx = wallet.createSignedTransaction(to, nonce, amountWei);
+    if (nonce == null) {
+      nonce = getNonce(from);
+    }
+
+    if (gasPrice == null) {
+      gasPrice = Transaction.GAS_PRICE_DEFAULT;
+    }
+
+    if (gasLimit == null) {
+      gasLimit = Transaction.GAS_LIMIT_DEFAULT;
+    }
+
+    Transaction tx = wallet.createSignedTransaction(to, amountWei, data, nonce, gasPrice, gasLimit);
     save(tx);
 
     return tx.getId().toString();
@@ -84,11 +97,23 @@ public class EthereumService {
     return wallets.keySet();
   }
 
-  public Wallet getWallet(String address) {
+  public Set<String> getWallets(String personId) {
+    if (personId == null) {
+      return new HashSet<>();
+    }
+
+    return wallets.values()
+        .stream()
+        .filter(wallet -> personId.equals(wallet.getPersonId()))
+        .map(wallet -> wallet.getAddress())
+        .collect(Collectors.toSet());
+  }
+
+  public Account getWallet(String address) {
     return wallets.get(address);
   }
 
-  public void save(Wallet wallet) {
+  public void save(Account wallet) {
     LOG.info("caching wallet '" + wallet.getFileName() + "' with address '" + wallet.getAddress() + "'");
 
     wallets.put(wallet.getAddress(), wallet);
@@ -105,8 +130,8 @@ public class EthereumService {
     return transactions.get(UUID.fromString(id));
   }
 
-  private void save(Transaction transaction) {
-    LOG.info("caching tx: " + transaction.getValue() + " to: " + transaction.getToAddress() + " with hash " + transaction.getHash());
+  public void save(Transaction transaction) {
+    LOG.info("Caching tx from: " + transaction.getFromAddress() + " to: " + transaction.getToAddress() + " with amount " + transaction.getValue() + " and hash: " + transaction.getHash());
 
     transactions.put(transaction.getId(), transaction);
   }
@@ -145,7 +170,7 @@ public class EthereumService {
       return balance.getBalance();
     }
     catch (Exception e) {
-      throw new ProcessingException("failed to get balance for address '" + address + "'", e);
+      throw new ProcessingException("Failed to get balance for address '" + address + "'", e);
     }
   }
 
@@ -157,11 +182,13 @@ public class EthereumService {
       ethSendTransaction = getWeb3j().ethSendRawTransaction(tx.getSignedContent()).sendAsync().get();
     }
     catch (Exception e) {
-      throw new ProcessingException("failed to send transaction " + tx.getSignedContent(), e);
+      throw new ProcessingException("Failed to send transaction " + tx.getSignedContent(), e);
     }
 
     checkResponseFromSending(ethSendTransaction);
 
+    tx.setSent(new Date());
+    tx.setError(ethSendTransaction.getError());
     tx.setHash(ethSendTransaction.getTransactionHash());
     tx.setStatus(Transaction.PENDING);
     LOG.info("Successfully sent TX. Hash: " + tx.getHash());
@@ -176,7 +203,9 @@ public class EthereumService {
     String result = response.getResult();
 
     if (error != null) {
-      LOG.error("error (code, message, data): " + error.getCode() + ", '" + error.getMessage() + "', '" + error.getData() + "'");
+      String message = "Failed to send transaction: " + error.getMessage();
+      LOG.error(message);
+      throw new ProcessingException(message);
     }
     else {
       LOG.info("result:" + result);

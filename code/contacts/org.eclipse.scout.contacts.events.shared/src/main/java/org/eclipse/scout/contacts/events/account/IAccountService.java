@@ -18,4 +18,34 @@ public interface IAccountService extends IService {
    * @return
    */
   AccountTablePageData getAccountTableData(SearchFilter filter, String personId);
+
+  /**
+   * @param formData
+   * @return
+   */
+  AccountFormData prepareCreate(AccountFormData formData);
+
+  /**
+   * @param formData
+   * @return
+   */
+  AccountFormData create(AccountFormData formData);
+
+  /**
+   * @param formData
+   * @return
+   */
+  AccountFormData load(AccountFormData formData);
+
+  /**
+   * @param formData
+   * @return
+   */
+  AccountFormData store(AccountFormData formData);
+
+  /**
+   * @param accountTo
+   * @return
+   */
+  String getPerson(String accountTo);
 }

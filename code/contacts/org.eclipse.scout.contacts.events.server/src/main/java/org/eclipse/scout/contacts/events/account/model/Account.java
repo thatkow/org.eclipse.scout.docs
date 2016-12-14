@@ -11,8 +11,8 @@ import org.web3j.crypto.TransactionEncoder;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.utils.Numeric;
 
-public class Wallet {
-  private static final Logger LOG = LoggerFactory.getLogger(Wallet.class);
+public class Account {
+  private static final Logger LOG = LoggerFactory.getLogger(Account.class);
 
   private String personId;
   private String name;
@@ -21,41 +21,43 @@ public class Wallet {
   private String pathToFile;
   private String password;
 
-  public static Wallet create(String name, String password, String pathToFile) {
-    LOG.info("Creating wallet '" + name + "' with password '" + password + "'");
+  public Account() {
 
-    Wallet wallet = new Wallet();
-    wallet.name = name;
-    wallet.pathToFile = pathToFile;
-    wallet.password = password;
+  }
+
+  public Account(String personId, String name, String password, String pathToFile) {
+    LOG.info("Creating account '" + name + "' for person '" + personId + "' with password '" + password + "'");
+
+    this.personId = personId;
+    this.name = name;
+    this.pathToFile = pathToFile;
+    this.password = password;
 
     try {
-      wallet.fileName = WalletUtils.generateNewWalletFile(password, new File(pathToFile));
-      wallet.credentials = wallet.getCredentials();
+      fileName = WalletUtils.generateNewWalletFile(password, new File(pathToFile));
+      credentials = getCredentials();
 
-      if (wallet.credentials == null) {
-        throw new ProcessingException("failed to obtain account credentials");
+      if (credentials == null) {
+        throw new ProcessingException("Failed to obtain account credentials");
       }
     }
     catch (Exception e) {
-      LOG.error("failed to create account", e);
-      return null;
+      LOG.error("Failed to create account", e);
+      throw new ProcessingException("Failed to create account", e);
     }
 
-    LOG.info("Wallet successfully created. File at " + wallet.pathToFile + "/" + wallet.fileName);
-
-    return wallet;
+    LOG.info("Account successfully created. File at " + pathToFile + "/" + fileName);
   }
 
-  public static Wallet load(String name, String password, String pathToFile, String fileName) {
-    Wallet wallet = new Wallet();
-    wallet.name = name;
-    wallet.pathToFile = pathToFile;
-    wallet.fileName = fileName;
-    wallet.password = password;
-    wallet.getCredentials();
+  public static Account load(String name, String password, String pathToFile, String fileName) {
+    Account account = new Account();
+    account.name = name;
+    account.pathToFile = pathToFile;
+    account.fileName = fileName;
+    account.password = password;
+    account.getCredentials();
 
-    return wallet;
+    return account;
   }
 
   public String getPersonId() {
@@ -102,6 +104,8 @@ public class Wallet {
     try {
       String fileWithPath = getFile().getAbsolutePath();
       credentials = WalletUtils.loadCredentials(password, fileWithPath);
+
+      // TODO verify again (performance issue gone now?)
 // tried to figure out where the time is used up
 //      File file = new File(fileWithPath);
 //      ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper(); // 8sec
@@ -118,14 +122,12 @@ public class Wallet {
     }
   }
 
-  public Transaction createSignedTransaction(String toAddress, BigInteger nonce, BigInteger value) {
-    Transaction tx = new Transaction(toAddress, nonce, value);
+  public Transaction createSignedTransaction(String to, BigInteger amountWei, String data, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit) {
+    Transaction tx = new Transaction(to, amountWei, data, nonce, gasPrice, gasLimit);
+
     tx.setFromAddress(getAddress());
-
     byte[] signedMessage = TransactionEncoder.signMessage(tx.getRawTransaction(), getCredentials());
-
     tx.setSignedContent(Numeric.toHexString(signedMessage));
-    tx.setStatus(Transaction.OFFLINE);
 
     return tx;
   }
@@ -136,9 +138,9 @@ public class Wallet {
       return false;
     }
 
-    if (obj instanceof Wallet) {
+    if (obj instanceof Account) {
       String address = getAddress();
-      String thatAddress = ((Wallet) obj).getAddress();
+      String thatAddress = ((Account) obj).getAddress();
       return address.equals(thatAddress);
     }
 

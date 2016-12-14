@@ -1,19 +1,25 @@
 package org.eclipse.scout.contacts.events.account.model;
 
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.UUID;
 
+import org.web3j.protocol.core.Response.Error;
 import org.web3j.protocol.core.methods.request.RawTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 public class Transaction {
 
-  // https://www.reddit.com/r/ethereum/comments/5g8ia6/attention_miners_we_recommend_raising_gas_limit/
-  // check https://ethstats.net/ for current values
-  public static final BigInteger GAS_PRICE_DEFAULT = BigInteger.valueOf(25_000_000_000L);
+  /**
+   * gas price: check <a href="https://ethstats.net/">ethstats.net</a> for current values. For additional infor see <a
+   * href="http://ethereum.stackexchange.com/questions/1113/can-i-set-the-gas-price-to-whatever-i-want/1133>ethereum.stackexchange.com</a>
+   */
+  public static final BigInteger GAS_PRICE_DEFAULT = BigInteger.valueOf(20_000_000_000L);
   public static final BigInteger GAS_LIMIT_DEFAULT = BigInteger.valueOf(30_000L);
+  public static final BigInteger TX_FEE_DEFAULT = GAS_PRICE_DEFAULT.multiply(GAS_LIMIT_DEFAULT);
 
-  public static final int ERROR = -1;
+  public static final int ERROR = -2;
+  public static final int REPLACED = -1;
   public static final int UNDEFINED = 0;
   public static final int OFFLINE = 1;
   public static final int PENDING = 2;
@@ -25,19 +31,23 @@ public class Transaction {
   private UUID id;
   private RawTransaction tx;
   private int status;
+  private Date created;
+  private Date sent;
   private String fromAddress;
   private String signedContent;
+  private Error error;
   private TransactionReceipt receipt;
   private String hash;
 
-  public Transaction(String toAddress, BigInteger nonce, BigInteger value) {
+  public Transaction(String to, BigInteger amountWei, String data, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit) {
     id = UUID.randomUUID();
-    tx = RawTransaction.createEtherTransaction(
-        nonce,
-        Transaction.GAS_PRICE_DEFAULT,
-        Transaction.GAS_LIMIT_DEFAULT,
-        toAddress,
-        value);
+
+    if (data == null) {
+      data = "";
+    }
+
+    tx = RawTransaction.createFunctionCallTransaction(nonce, gasPrice, gasLimit, to, amountWei, data);
+    setCreated(new Date());
     status = UNDEFINED;
   }
 
@@ -51,6 +61,22 @@ public class Transaction {
 
   public void setStatus(int status) {
     this.status = status;
+  }
+
+  public Date getCreated() {
+    return created;
+  }
+
+  public void setCreated(Date created) {
+    this.created = created;
+  }
+
+  public Date getSent() {
+    return sent;
+  }
+
+  public void setSent(Date sent) {
+    this.sent = sent;
   }
 
   public RawTransaction getRawTransaction() {
@@ -75,6 +101,7 @@ public class Transaction {
 
   public void setSignedContent(String signedContent) {
     this.signedContent = signedContent;
+    this.status = OFFLINE;
   }
 
   public String getHash() {
@@ -87,6 +114,14 @@ public class Transaction {
 
   public BigInteger getValue() {
     return tx.getValue();
+  }
+
+  public Error getError() {
+    return error;
+  }
+
+  public void setError(Error error) {
+    this.error = error;
   }
 
   public TransactionReceipt getTransactionReceipt() {
