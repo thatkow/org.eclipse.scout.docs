@@ -15,6 +15,7 @@ code/.project
 code/.settings
 bin
 classes
+*.prefs
 
 # Maven #
 target/
