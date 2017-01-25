@@ -42,25 +42,33 @@ public class WalletLookupService extends AbstractLookupService<String> implement
   @Override
   public List<? extends ILookupRow<String>> getDataByText(ILookupCall<String> call) {
     ArrayList<LookupRow<String>> rows = new ArrayList<>();
-    String searchText = call.getText().toLowerCase();
+    String searchText = getSearchText(call);
 
-    BEANS.get(EthereumService.class).getWallets(getPersonId())
-        .stream()
-        .forEach(address -> {
-          Account wallet = BEANS.get(EthereumService.class).getWallet(address);
-          if (wallet.getName().toLowerCase().contains(searchText)) {
-            rows.add(new LookupRow<>(wallet.getAddress(), wallet.getName()));
-          }
-        });
+    for (String address : BEANS.get(EthereumService.class).getWallets(getPersonId())) {
+      Account wallet = BEANS.get(EthereumService.class).getWallet(address);
+      if (wallet.getName().toLowerCase().contains(searchText)) {
+        rows.add(new LookupRow<>(wallet.getAddress(), wallet.getName()));
+      }
+    }
 
     return rows;
+  }
+
+  private String getSearchText(ILookupCall<String> call) {
+    String searchText = call.getText().toLowerCase();
+
+    if (searchText.endsWith("*")) {
+      searchText = searchText.substring(0, searchText.length() - 1);
+    }
+
+    return searchText;
   }
 
   @Override
   public List<? extends ILookupRow<String>> getDataByAll(ILookupCall<String> call) {
     ArrayList<LookupRow<String>> rows = new ArrayList<>();
 
-    BEANS.get(EthereumService.class).getWallets()
+    BEANS.get(EthereumService.class).getWallets(getPersonId())
         .stream()
         .forEach(address -> {
           Account wallet = BEANS.get(EthereumService.class).getWallet(address);

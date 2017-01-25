@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -21,10 +20,13 @@ import org.slf4j.LoggerFactory;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.Response.Error;
+import org.web3j.protocol.core.methods.response.EthCoinbase;
 import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.web3j.protocol.exceptions.MessageDecodingException;
+import org.web3j.protocol.http.HttpService;
 import org.web3j.protocol.infura.InfuraHttpService;
 import org.web3j.utils.Convert;
 import org.web3j.utils.Convert.Unit;
@@ -34,9 +36,20 @@ public class EthereumService {
 
   private static final Logger LOG = LoggerFactory.getLogger(EthereumService.class);
 
+  // switch for testrpc/infura
+  private static final boolean USE_TESTRPC = true;
+
+  // testrpc coordinates
+  private static final String CLIENT_IP = "192.168.99.100";
+  private static final String CLIENT_PORT = "8545";
+
+  // infura coordinates
   private static final String TOKEN = "3UMFlH4jlpWx6IqttMeG";
   private static final String ETHEREUM_MAIN = "https://mainnet.infura.io/" + TOKEN;
   // private static final String ETHEREUM_TEST = "https://ropsten.infura.io/" + TOKEN;
+
+  // copied from org.web3j.protocol.core.methods.response.Numeric
+  private static final String HEX_PREFIX = "0x";
 
   // the connection to the ethereum net
   private Web3j web3j = null;
@@ -53,6 +66,27 @@ public class EthereumService {
     populateAccount("prs01", "UTC--2016-12-12T08-09-51.487000000Z--8d2ec831056c620fea2fabad8bf6548fc5810cc3.json", "123");
     populateAccount("prs01a", "UTC--2016-12-12T09-07-24.203000000Z--cbc12f306da804bb681aceeb34f0bc58ba2f7ad7.json", "456");
     LOG.info("local wallets successfully loaded ...");
+
+    // move some initial funds to alice's account (only when working with testrpc)
+    if (USE_TESTRPC) {
+      try {
+        EthCoinbase coinbase = getWeb3j().ethCoinbase().sendAsync().get();
+        String from = coinbase.getAddress();
+        String to = "0x8d2ec831056c620fea2fabad8bf6548fc5810cc3";
+        BigInteger amount = Convert.toWei("10", Unit.ETHER).toBigInteger();
+
+        BigInteger nonce = getNonce(from);
+
+        org.web3j.protocol.core.methods.request.Transaction transaction =
+            new org.web3j.protocol.core.methods.request.Transaction(from, nonce, Transaction.GAS_PRICE_DEFAULT, Transaction.GAS_LIMIT_DEFAULT, to, amount, null);
+
+        EthSendTransaction txRequest = getWeb3j().ethSendTransaction(transaction).sendAsync().get();
+        LOG.info(String.format("added %d weis to account of prs01. tx hash: %s", amount, txRequest.getTransactionHash()));
+      }
+      catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   private void populateAccount(String personId, String fileName, String password) {
@@ -99,7 +133,7 @@ public class EthereumService {
 
   public Set<String> getWallets(String personId) {
     if (personId == null) {
-      return new HashSet<>();
+      return getWallets();
     }
 
     return wallets.values()
@@ -139,7 +173,14 @@ public class EthereumService {
   private Web3j getWeb3j() {
     if (web3j == null) {
       LOG.info("Trying to connect to Ethereum net ...");
-      web3j = Web3j.build(new InfuraHttpService(ETHEREUM_MAIN));
+
+      if (USE_TESTRPC) {
+        String clientUrl = String.format("http://%s:%s", CLIENT_IP, CLIENT_PORT);
+        web3j = Web3j.build(new HttpService(clientUrl));
+      }
+      else {
+        web3j = Web3j.build(new InfuraHttpService(ETHEREUM_MAIN));
+      }
       LOG.info("Successfully connected");
     }
 
@@ -166,8 +207,11 @@ public class EthereumService {
 
   public BigInteger getBalanceWei(String address) {
     try {
-      EthGetBalance balance = getWeb3j().ethGetBalance(address, DefaultBlockParameterName.LATEST).sendAsync().get();
-      return balance.getBalance();
+      EthGetBalance balanceResponse = getWeb3j().ethGetBalance(address, DefaultBlockParameterName.LATEST).sendAsync().get();
+      BigInteger balance = getBalanceFix(balanceResponse);
+      return balance;
+
+      // return balanceResponse.getBalance();
     }
     catch (Exception e) {
       throw new ProcessingException("Failed to get balance for address '" + address + "'", e);
@@ -235,19 +279,90 @@ public class EthereumService {
 
   public BigInteger getNonce(String address) {
     LOG.info("Getting nonce for address " + address + " ...");
-    EthGetTransactionCount txCount;
+    // TODO cleanup once web3j takes care of testrpc encoding bug
+//    EthGetTransactionCount txCount;
+//
+//    try {
+//      txCount = getWeb3j().ethGetTransactionCount(
+//          address, DefaultBlockParameterName.LATEST).sendAsync().get();
+//    }
+//    catch (Exception e) {
+//      throw new ProcessingException("failed to get nonce for address '" + address + "'");
+//    }
+//
+//    BigInteger nonce = txCount.getTransactionCount();
+
+    BigInteger nonce = null;
 
     try {
-      txCount = getWeb3j().ethGetTransactionCount(
-          address, DefaultBlockParameterName.LATEST).sendAsync().get();
+      nonce = getNonceFix(address);
+      LOG.info("Successfully got nonce: " + nonce);
     }
     catch (Exception e) {
-      throw new ProcessingException("failed to get nonce for address '" + address + "'");
+      LOG.error("error getting nonce for address " + address, e);
     }
 
-    BigInteger nonce = txCount.getTransactionCount();
+    return nonce;
+  }
+
+  private BigInteger getNonceFix(String address) throws Exception {
+    LOG.info("Getting nonce for address " + address + " ...");
+
+    EthGetTransactionCount txCount = getWeb3j().ethGetTransactionCount(address, DefaultBlockParameterName.LATEST).sendAsync().get();
+    // TODO fix this once web3j accouts for 'bug' in testrpc
+    BigInteger nonce = getTransactionCount(txCount);
+
     LOG.info("Successfully got nonce: " + nonce);
 
-    return txCount.getTransactionCount();
+    return nonce;
   }
+
+  // copied from org.web3j.protocol.core.methods.response.EthGetTransactionCount
+  private BigInteger getTransactionCount(EthGetTransactionCount txCount) {
+    String count = txCount.getResult();
+    return decodeQuantity(count);
+  }
+
+  // copied from org.web3j.protocol.core.methods.response.EthGetBalance
+  private BigInteger getBalanceFix(EthGetBalance balanceResponse) {
+    String balance = balanceResponse.getResult();
+    return decodeQuantity(balance);
+  }
+
+  // copied from org.web3j.protocol.core.methods.response.Numeric
+  private static BigInteger decodeQuantity(String value) {
+    if (!isValidHexQuantity(value)) {
+      throw new MessageDecodingException("Value must be in format 0x[1-9]+[0-9]* or 0x0");
+    }
+    try {
+      return new BigInteger(value.substring(2), 16);
+    }
+    catch (NumberFormatException e) {
+      throw new MessageDecodingException("Negative ", e);
+    }
+  }
+
+  // copied from org.web3j.protocol.core.methods.response.Numeric
+  private static boolean isValidHexQuantity(String value) {
+    if (value == null) {
+      return false;
+    }
+
+    if (value.length() < 3) {
+      return false;
+    }
+
+    if (!value.startsWith(HEX_PREFIX)) {
+      return false;
+    }
+
+    // If TestRpc resolves the following issue, we can reinstate this code
+    // https://github.com/ethereumjs/testrpc/issues/220
+    //        if (value.length() > 3 && value.charAt(2) == '0') {
+    //            return false;
+    //        }
+
+    return true;
+  }
+
 }

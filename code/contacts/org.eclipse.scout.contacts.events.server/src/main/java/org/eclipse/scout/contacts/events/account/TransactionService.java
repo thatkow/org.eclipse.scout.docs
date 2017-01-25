@@ -43,7 +43,12 @@ public class TransactionService implements ITransactionService {
     rowData.setHash(tx.getHash());
     TransactionReceipt receipt = tx.getTransactionReceipt();
     if (receipt != null) {
-      rowData.setBlock(receipt.getBlockNumber().longValue());
+      try {
+        rowData.setBlock(receipt.getBlockNumber().longValue());
+      }
+      catch (Exception e) {
+        LOG.info("failed to fetch tx block number", e);
+      }
     }
   }
 
