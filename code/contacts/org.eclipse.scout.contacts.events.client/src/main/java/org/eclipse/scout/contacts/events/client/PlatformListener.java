@@ -14,10 +14,8 @@ import org.eclipse.scout.contacts.events.account.AccountPageExtension;
 import org.eclipse.scout.contacts.events.client.event.EventOutlineExtension;
 import org.eclipse.scout.contacts.events.client.event.EventPageExtension;
 import org.eclipse.scout.contacts.events.client.person.PersonFormTabExtension;
-import org.eclipse.scout.contacts.events.client.person.PersonFormWalletTabExtension;
 import org.eclipse.scout.contacts.events.client.person.PersonTablePageExtension;
 import org.eclipse.scout.contacts.events.shared.person.PersonFormTabExtensionData;
-import org.eclipse.scout.contacts.events.shared.person.PersonFormWalletTabExtensionData;
 import org.eclipse.scout.contacts.events.shared.person.PersonTablePageDataExtension;
 import org.eclipse.scout.rt.platform.BEANS;
 import org.eclipse.scout.rt.platform.IPlatform.State;
@@ -44,13 +42,14 @@ public class PlatformListener implements IPlatformListener {
     extensionRegistry.register(EventOutlineExtension.class);
     extensionRegistry.register(EventPageExtension.class);
 
-    extensionRegistry.register(PersonFormWalletTabExtension.class);
     extensionRegistry.register(AccountPageExtension.class);
 
     // Register DTO extensions
     extensionRegistry.register(PersonFormTabExtensionData.class);
     extensionRegistry.register(PersonTablePageDataExtension.class);
 
-    extensionRegistry.register(PersonFormWalletTabExtensionData.class);
+    // Wallet Extensions
+//  extensionRegistry.register(PersonFormWalletTabExtension.class);
+//  extensionRegistry.register(PersonFormWalletTabExtensionData.class);
   }
 }
