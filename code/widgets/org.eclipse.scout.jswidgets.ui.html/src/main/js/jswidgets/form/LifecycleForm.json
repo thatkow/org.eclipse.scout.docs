@@ -1,0 +1,57 @@
+{
+  "id": "jswidgets.LifecycleForm",
+  "type": "model",
+  "displayHint": "view",
+  "rootGroupBox": {
+    "id": "MainBox",
+    "objectType": "GroupBox",
+    "mainBox": true,
+    "menus": [
+      {
+        "id": "OkMenu",
+         "objectType": "OkMenu",
+         "text": "Ok",
+         "actionStyle": 1,
+         "keyStroke": "enter"
+      },
+      {
+        "id": "CancelMenu",
+         "objectType": "CancelMenu",
+         "text": "Cancel",
+         "actionStyle": 1,
+         "keyStroke": "esc"
+      },
+      {
+        "id": "SaveMenu",
+         "objectType": "SaveMenu",
+         "text": "Save",
+         "actionStyle": 1
+      },
+      {
+        "id": "CloseMenu",
+         "objectType": "CloseMenu",
+         "text": "Close",
+         "actionStyle": 1
+      }
+    ],
+    "fields": [
+      {
+        "id": "DetailBox",
+        "objectType": "GroupBox",
+        "gridColumnCount": 1,
+        "fields": [
+          {
+            "id": "NameField",
+            "objectType": "StringField",
+            "label": "Name"
+          },
+          {
+            "id": "BirthdayField",
+            "objectType": "DateField",
+            "label": "BirthDay"
+          }
+        ]
+      }
+    ]
+  }
+}
