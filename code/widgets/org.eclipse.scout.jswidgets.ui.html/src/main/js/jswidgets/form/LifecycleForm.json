@@ -9,29 +9,21 @@
     "menus": [
       {
         "id": "OkMenu",
-         "objectType": "OkMenu",
-         "text": "Ok",
-         "actionStyle": 1,
-         "keyStroke": "enter"
+         "objectType": "OkMenu"
       },
       {
         "id": "CancelMenu",
-         "objectType": "CancelMenu",
-         "text": "Cancel",
-         "actionStyle": 1,
-         "keyStroke": "esc"
+         "objectType": "CancelMenu"
       },
       {
         "id": "SaveMenu",
          "objectType": "SaveMenu",
-         "text": "Save",
-         "actionStyle": 1
+         "keyStroke": ''
       },
       {
         "id": "CloseMenu",
          "objectType": "CloseMenu",
-         "text": "Close",
-         "actionStyle": 1
+         "keyStroke": ''
       }
     ],
     "fields": [
@@ -48,7 +40,27 @@
           {
             "id": "BirthdayField",
             "objectType": "DateField",
-            "label": "BirthDay"
+            "label": "Birthday"
+          },
+          {
+            "id": "ExceptionField",
+            "objectType": "CheckBoxField",
+            "label": "${textKey:ExceptionWhileSaving}"
+          },
+          {
+            "id": "HasCloseButtonField",
+            "objectType": "CheckBoxField",
+            "label": "${textKey:HasCloseButton}",
+            "tooltipText": "${textKey:HasCloseButtonTooltip}",
+            "value": true,
+            "gridDataHints": {
+              "fillHorizontal": false
+            }
+          },
+          {
+            "id": "AskIfNeedSaveField",
+            "objectType": "CheckBoxField",
+            "label": "${textKey:AskToSaveChangesOnCancel}"
           }
         ]
       }

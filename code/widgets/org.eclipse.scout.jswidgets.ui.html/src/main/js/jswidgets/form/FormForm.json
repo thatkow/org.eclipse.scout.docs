@@ -34,7 +34,12 @@
           {
             "id": "LifecycleDataField",
             "objectType": "LabelField",
-            "label": "${textKey:LifecycleData}"
+            "label": "${textKey:LifecycleData}",
+            "visible": false,
+            "gridDataHints": {
+              "h": 3,
+              "weightY": 0
+            }
           }
         ]
       },

@@ -84,11 +84,33 @@ jswidgets.FormForm.prototype._onOpenLifecycleFormButtonClick = function(model) {
     status: this._createStatus(this.widget('StatusField').value),
     data: this.LifecycleData
   });
-  form.open();
-  form.on('close', function(event) {
-    this.LifecycleData = form.data;
-    this.widget('LifecycleDataField').setValue('Name: ' + this.LifecycleData.name + ', Birthday: ' + this.LifecycleData.birthday);
+
+  var lifecycleDataField = this.widget('LifecycleDataField');
+  form.on('load', function(event) {
+    var data = form.data;
+    var text = 'Form loaded (' + this.lifecycleDataToString(data) + ')';
+    lifecycleDataField.setValue(text);
   }.bind(this));
+  form.on('save', function(event) {
+    var data = form.data;
+    var text = lifecycleDataField.value;
+    text += '\n' + 'Form saved (' + this.lifecycleDataToString(data) + ')';
+    lifecycleDataField.setValue(text);
+  }.bind(this));
+  form.on('close', function(event) {
+    var data = form.data;
+    var text = lifecycleDataField.value;
+    text += '\n' + 'Form closed (' + this.lifecycleDataToString(data) + ')';
+    lifecycleDataField.setValue(text);
+    this.lifecycleData = data;
+  }.bind(this));
+
+  lifecycleDataField.setVisible(true);
+  form.open();
+};
+
+jswidgets.FormForm.prototype.lifecycleDataToString = function(data) {
+  return 'Name: ' + data.name + ', Birthday: ' + data.birthday;
 };
 
 jswidgets.FormForm.prototype._onTitleChange = function(event) {

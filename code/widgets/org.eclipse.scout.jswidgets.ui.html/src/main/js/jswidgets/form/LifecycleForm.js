@@ -10,7 +10,6 @@
  ******************************************************************************/
 jswidgets.LifecycleForm = function() {
   jswidgets.LifecycleForm.parent.call(this);
-  this.data = {};
 };
 scout.inherits(jswidgets.LifecycleForm, scout.Form);
 
@@ -21,12 +20,16 @@ jswidgets.LifecycleForm.prototype._jsonModel = function() {
 jswidgets.LifecycleForm.prototype._init = function(model) {
   jswidgets.LifecycleForm.parent.prototype._init.call(this, model);
 
-  this.importData(this.data); // FIXME CGU or in open?
+  this.widget('HasCloseButtonField').on('propertyChange', this._onHasCloseButtonPropertyChange.bind(this));
+
+  var askIfNeedSaveField = this.widget('AskIfNeedSaveField');
+  askIfNeedSaveField.setValue(this.askIfNeedSave);
+  askIfNeedSaveField.on('propertyChange', this._onAskIfNeedSavePropertyChange.bind(this));
 };
 
-jswidgets.LifecycleForm.prototype.importData = function(data) {
-  this.widget('NameField').setValue(data.name);
-  this.widget('BirthdayField').setValue(data.birthday);
+jswidgets.LifecycleForm.prototype.importData = function() {
+  this.widget('NameField').setValue(this.data.name);
+  this.widget('BirthdayField').setValue(this.data.birthday);
 };
 
 jswidgets.LifecycleForm.prototype.exportData = function() {
@@ -36,8 +39,20 @@ jswidgets.LifecycleForm.prototype.exportData = function() {
   };
 };
 
-jswidgets.LifecycleForm.prototype._save = function() {
+jswidgets.LifecycleForm.prototype._save = function(data) {
+  if (!this.widget('ExceptionField').value) {
+    return jswidgets.LifecycleForm.parent.prototype._save.call(this, data);
+  }
+  // Simulate a failing asynchronous save operation (e.g. an ajax call)
   return $.resolvedPromise().then(function() {
-    return scout.Status.ok();
+    throw new Error('Saving failed');
   });
+};
+
+jswidgets.LifecycleForm.prototype._onHasCloseButtonPropertyChange = function(event) {
+  this.widget('CloseMenu').setVisible(event.newValue);
+};
+
+jswidgets.LifecycleForm.prototype._onAskIfNeedSavePropertyChange = function(event) {
+  this.setAskIfNeedSave(event.newValue);
 };
