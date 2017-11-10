@@ -12,6 +12,7 @@ jswidgets.TilesForm = function() {
   jswidgets.TilesForm.parent.call(this);
   this.insertedTileCount = 0;
   this.tileFilter = null;
+  this.groups = [];
 };
 scout.inherits(jswidgets.TilesForm, scout.Form);
 
@@ -24,6 +25,14 @@ jswidgets.TilesForm.prototype._init = function(model) {
 
   this.tiles = this.widget('Tiles');
   this.tiles.on('propertyChange', this._onTilesPropertyChange.bind(this));
+
+  this.groups.push(scout.create('TileGroup', {parent: this, title: 'Group A', body: {objectType: 'Tiles'}}));
+  this.groups.push(scout.create('TileGroup', {parent: this, title: 'Group B', body: {objectType: 'Tiles'}}));
+  this.groups.push(scout.create('TileGroup', {parent: this, title: 'Group C', body: {objectType: 'Tiles'}}));
+
+  this.tiles.tiles.forEach(function(tile) {
+    tile.setGroup(this.groups[0]);
+  }, this);
 
   var filterField = this.widget('FilterField');
   filterField.on('propertyChange', this._onFilterPropertyChange.bind(this));
@@ -73,6 +82,10 @@ jswidgets.TilesForm.prototype._init = function(model) {
   var scrollableField = this.widget('ScrollableField');
   scrollableField.setValue(this.tiles.scrollable);
   scrollableField.on('propertyChange', this._onScrollablePropertyChange.bind(this));
+
+  var groupedField = this.widget('GroupedField');
+  groupedField.setValue(this.tiles.grouped);
+  groupedField.on('propertyChange', this._onGroupedPropertyChange.bind(this));
 
   // -- Actions
 
@@ -185,10 +198,17 @@ jswidgets.TilesForm.prototype._onScrollablePropertyChange = function(event) {
   }
 };
 
+jswidgets.TilesForm.prototype._onGroupedPropertyChange = function(event) {
+  if (event.propertyName === 'value') {
+    this.tiles.setGrouped(event.newValue);
+  }
+};
+
 jswidgets.TilesForm.prototype._onInsertMenuAction = function(event) {
   var tile = new scout.create('jswidgets.SimpleTile', {
     parent: this.tiles,
-    label: 'New Tile ' + this.insertedTileCount++
+    label: 'New Tile ' + this.insertedTileCount++,
+    group: this.groups[this.insertedTileCount % 3]
   });
   this.tiles.insertTile(tile);
 };
@@ -198,7 +218,8 @@ jswidgets.TilesForm.prototype._onInsertManyMenuAction = function(event) {
   for (var i = 0; i < 50; i++) {
     tiles.push(new scout.create('jswidgets.SimpleTile', {
       parent: this.tiles,
-      label: 'New Tile ' + this.insertedTileCount++
+      label: 'New Tile ' + this.insertedTileCount++,
+      group: this.groups[this.insertedTileCount % 3]
     }));
   }
   this.tiles.insertTiles(tiles);
