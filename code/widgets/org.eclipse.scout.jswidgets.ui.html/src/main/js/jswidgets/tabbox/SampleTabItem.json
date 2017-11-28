@@ -1,0 +1,13 @@
+ {
+   "id": "jswidgets.SampleTabItem",
+   "objectType": "TabItem",
+   "type": "model",
+   "label": "First Tab",
+   "fields": [
+     {
+       "id": "StringField",
+       "objectType": "StringField",
+       "label": "Sample field"
+     }
+   ]
+ }

@@ -30,6 +30,7 @@
   __include("jswidgets/groupbox/BorderDecorationLookupCall.js");
   __include("jswidgets/groupbox/GroupBoxForm.js");
   __include("jswidgets/groupbox/GroupBoxFieldsLookupCall.js");
+  __include("jswidgets/groupbox/GroupBoxPropertiesBox.js");
   __include("jswidgets/numberfield/NumberFieldForm.js");
   __include("jswidgets/logicalgrid/GridDataBox.js");
   __include("jswidgets/logicalgrid/LogicalGridForm.js");
@@ -50,6 +51,7 @@
   __include("jswidgets/stringfield/StringFieldForm.js");
   __include("jswidgets/stringfield/StringFormatLookupCall.js");
   __include("jswidgets/tabbox/TabBoxForm.js");
+  __include("jswidgets/tabbox/SampleTabItem.js");
   __include("jswidgets/tabbox/SelectedTabLookupCall.js");
   __include("jswidgets/tablefield/TableFieldForm.js");
   __include("jswidgets/tiles/ColorSchemeLookupCall.js");
