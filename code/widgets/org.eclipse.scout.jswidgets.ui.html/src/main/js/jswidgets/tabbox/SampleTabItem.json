@@ -5,6 +5,11 @@
    "label": "First Tab",
    "fields": [
      {
+       "id": "CurrentTab.Label",
+       "objectType": "LabelField",
+       "labelVisible": false
+     },
+     {
        "id": "StringField",
        "objectType": "StringField",
        "label": "Sample field"

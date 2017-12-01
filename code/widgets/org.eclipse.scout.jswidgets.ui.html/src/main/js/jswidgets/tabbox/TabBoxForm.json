@@ -20,38 +20,17 @@
               {
                 "id": "TabItem1",
                 "objectType": "jswidgets.SampleTabItem",
-                "label": "First Tab",
-                 "fields": [
-                   {
-                     "id": "LabelField",
-                     "objectType": "LabelField",
-                     "label": "Tab01"
-                   }
-                 ]
+                "label": "First Tab"
               },
               {
                 "id": "TabItem2",
                 "objectType": "jswidgets.SampleTabItem",
-                "label": "Second Tab",
-                 "fields": [
-                   {
-                     "id": "LabelField",
-                     "objectType": "LabelField",
-                     "label": "Tab02"
-                   }
-                 ]
+                "label": "Second Tab"
               },
               {
                 "id": "TabItem3",
                 "objectType": "jswidgets.SampleTabItem",
-                "label": "Third Tab",
-                 "fields": [
-                   {
-                     "id": "LabelField",
-                     "objectType": "LabelField",
-                     "label": "Tab03"
-                   }
-                 ]
+                "label": "Third Tab"
               }
             ],
             "menus": [
@@ -102,7 +81,7 @@
                     "id": "FormFieldPropertiesBox",
                     "objectType": "jswidgets.FormFieldPropertiesBox"
                   },
-		  {
+              {
                     "id": "GridDataBox",
                     "objectType": "jswidgets.GridDataBox",
                     "label": "Grid Data Hints"
@@ -114,6 +93,12 @@
                 "objectType": "TabItem",
                 "label": "Current Tab Item",
                 "fields": [
+                  {
+                    "id": "CurrentTab.MarkedField",
+                    "objectType": "CheckBoxField",
+                    "label": "Marked",
+                    "labelVisible": false
+                  },
                   {
                     "id": "CurrentTab.GroupBoxPropertiesBox",
                     "objectType": "jswidgets.GroupBoxPropertiesBox"

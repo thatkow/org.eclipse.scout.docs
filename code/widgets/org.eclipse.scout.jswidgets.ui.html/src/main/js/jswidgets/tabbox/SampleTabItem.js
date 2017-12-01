@@ -16,6 +16,7 @@ scout.inherits(jswidgets.SampleTabItem, scout.TabItem);
 jswidgets.SampleTabItem.prototype._init = function(model) {
   jswidgets.SampleTabItem.parent.prototype._init.call(this, model);
 
+  this.widget('CurrentTab.Label').setValue(this.label);
 
 };
 
