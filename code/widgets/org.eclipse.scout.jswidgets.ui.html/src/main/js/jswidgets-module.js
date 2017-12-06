@@ -9,6 +9,7 @@
 (function(jswidgets, scout, $, undefined) {
   __include("jswidgets/App.js");
   __include("jswidgets/accordion/AccordionForm.js");
+  __include("jswidgets/action/ActionPropertiesBox.js");
   __include("jswidgets/carousel/CarouselForm.js");
   __include("jswidgets/common/IconIdLookupCall.js");
   __include("jswidgets/form/DisplayHintLookupCall.js");
@@ -31,6 +32,8 @@
   __include("jswidgets/groupbox/GroupBoxForm.js");
   __include("jswidgets/groupbox/GroupBoxFieldsLookupCall.js");
   __include("jswidgets/groupbox/GroupBoxPropertiesBox.js");
+  __include("jswidgets/menubar/MenuBarForm.js");
+  __include("jswidgets/menubar/MenuItemLookupCall.js");
   __include("jswidgets/numberfield/NumberFieldForm.js");
   __include("jswidgets/logicalgrid/GridDataBox.js");
   __include("jswidgets/logicalgrid/LogicalGridForm.js");
