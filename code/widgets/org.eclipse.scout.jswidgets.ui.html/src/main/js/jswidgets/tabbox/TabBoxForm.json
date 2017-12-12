@@ -42,6 +42,13 @@
               }
             ]
           }
+        ],
+        "menus": [
+          {
+            "id": "AddTabMenu",
+            "objectType": "Menu",
+            "text": "Add Tab"
+          }
         ]
       },
       {

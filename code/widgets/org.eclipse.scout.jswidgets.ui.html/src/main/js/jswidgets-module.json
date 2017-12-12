@@ -23,6 +23,7 @@
     "jswidgets/proposalfield/ProposalFieldPropertiesBox.json",
     "jswidgets/stringfield/StringFieldForm.json",
     "jswidgets/tabbox/TabBoxForm.json",
+    "jswidgets/tabbox/DynamicTab.json",
     "jswidgets/tablefield/TableFieldForm.json",
     "jswidgets/tiles/TilesForm.json",
     "jswidgets/tiles/TilesLayoutConfigBox.json",

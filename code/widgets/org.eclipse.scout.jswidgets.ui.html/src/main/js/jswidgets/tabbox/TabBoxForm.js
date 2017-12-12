@@ -10,6 +10,7 @@
  ******************************************************************************/
 jswidgets.TabBoxForm = function() {
   jswidgets.TabBoxForm.parent.call(this);
+  this.dynamicTabCounter = 0;
 };
 scout.inherits(jswidgets.TabBoxForm, scout.Form);
 
@@ -17,6 +18,9 @@ jswidgets.TabBoxForm.prototype._init = function(model) {
   jswidgets.TabBoxForm.parent.prototype._init.call(this, model);
   var tabBox = this.widget('TabBox');
   tabBox.on('propertyChange', this._onFieldPropertyChange.bind(this));
+
+  var addTabMenu = this.widget('AddTabMenu');
+  addTabMenu.on('action', this._onAddTabMenuAction.bind(this));
 
   var selectedTabField = this.widget('SelectedTabField');
   selectedTabField.setValue(tabBox.selectedTab.id);
@@ -38,6 +42,18 @@ jswidgets.TabBoxForm.prototype._onSelectedTabChange = function(event) {
       this.widget('TabBox').setSelectedTab();
     }
   }
+};
+
+jswidgets.TabBoxForm.prototype._onAddTabMenuAction = function() {
+  var tabBox = this.widget('TabBox'),
+    tabItems = tabBox.tabItems || [],
+    tabModel = scout.models.getModel('jswidgets.DynamicTab');
+  tabModel.id = 'dynTab' + this.dynamicTabCounter++;
+  tabModel.parent = tabBox;
+  tabItems = tabItems.slice();
+  tabItems.push(scout.create('TabItem', tabModel));
+  tabBox.setTabItems(tabItems);
+
 };
 
 jswidgets.TabBoxForm.prototype._onFieldPropertyChange = function(event) {
